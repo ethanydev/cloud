@@ -70,15 +70,18 @@ app.use(errorHandler);
 
 const containerScheduler = require("./services/container.scheduler");
 
+const PORT = process.env.PORT || 3000;
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB 연결 성공");
     containerScheduler.restore();
+    app.listen(PORT, () => {
+      console.log(`서버 실행 중: http://localhost:${PORT}`);
+    });
   })
-  .catch((err) => console.error("MongoDB 연결 실패:", err));
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`서버 실행 중: http://localhost:${PORT}`);
-});
+  .catch((err) => {
+    console.error("MongoDB 연결 실패:", err);
+    process.exit(1);
+  });
