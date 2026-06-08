@@ -127,6 +127,16 @@ exports.createReservation = async (req, res) => {
       return res.status(400).json({ message: "사용 목적을 입력해주세요." });
     }
 
+    // Docker 컨테이너 주말 예약 제한 (KST 기준)
+    if (os_preset) {
+      const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+      const startKST = new Date(startDate.getTime() + KST_OFFSET_MS);
+      const dayOfWeek = startKST.getUTCDay(); // 0=일, 6=토
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return res.status(400).json({ message: "주말에는 예약할 수 없습니다." });
+      }
+    }
+
     const validation = await validateReservation(resource_id, start_time, end_time, null, !!os_preset);
     if (!validation.valid) {
       return res.status(validation.status).json({ message: validation.message });

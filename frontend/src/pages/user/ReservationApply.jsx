@@ -93,9 +93,23 @@ function ReservationApply({ onMovePage }) {
     return `${String(next).padStart(2, "0")}:00`;
   };
 
+  const isWeekend = (dateStr) => {
+    if (!dateStr) return false;
+    const [year, month, day] = dateStr.split("-").map(Number);
+    const d = new Date(year, month - 1, day);
+    return d.getDay() === 0 || d.getDay() === 6;
+  };
+
   const handleChange = (event) => {
     const { name, value } = event.target;
-    if (name === "start_time") {
+    if (name === "date") {
+      setForm((prev) => ({ ...prev, date: value }));
+      if (isWeekend(value)) {
+        setErrorMessage("주말에는 예약할 수 없습니다.");
+      } else {
+        setErrorMessage("");
+      }
+    } else if (name === "start_time") {
       setForm((prev) => ({
         ...prev,
         start_time: value,
@@ -130,6 +144,11 @@ function ReservationApply({ onMovePage }) {
 
     if (!form.date) {
       setErrorMessage("예약 날짜를 선택해주세요.");
+      return;
+    }
+
+    if (isWeekend(form.date)) {
+      setErrorMessage("주말에는 예약할 수 없습니다.");
       return;
     }
 
