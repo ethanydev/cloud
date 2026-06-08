@@ -30,7 +30,7 @@ function MyReservations({ onUseReservation }) {
   const statusLabel = {
     waiting: "대기중",
     reserved: "예약됨",
-    using: "사용중",
+    using: "사용 중",
     completed: "완료",
     cancelled: "취소됨",
   };

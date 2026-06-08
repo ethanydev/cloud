@@ -110,23 +110,29 @@ function WeeklyReservation({ onMovePage }) {
     return "-";
   };
 
-  const getBlockType = (status) => {
+  const getBlockType = (reservation) => {
+    const { status, start_time, end_time } = reservation;
     if (status === "using") return "using";
-    if (status === "reserved") return "reserved";
+    if (status === "reserved") {
+      const now = new Date();
+      const start = new Date(start_time);
+      const end = new Date(end_time);
+      if (!Number.isNaN(start.getTime()) && now >= start && now < end) {
+        return "using";
+      }
+      return "reserved";
+    }
     if (status === "waiting") return "purple";
     if (status === "completed") return "gray";
     if (status === "cancelled") return "gray";
-
     return "reserved";
   };
 
   const getBlockClassName = (type) => {
-    if (type === "docker") return "reservation-block docker-block";
     if (type === "using") return "reservation-block using-block";
     if (type === "reserved") return "reservation-block reserved-block";
     if (type === "purple") return "reservation-block using-purple-block";
     if (type === "gray") return "reservation-block gray-block";
-
     return "reservation-block";
   };
 
@@ -153,7 +159,7 @@ function WeeklyReservation({ onMovePage }) {
       title: getResourceName(reservation),
       time: `${formatTime(startDate)} - ${formatTime(endDate)}`,
       status: getStatusText(reservation.status),
-      type: reservation.os_preset ? "docker" : getBlockType(reservation.status),
+      type: getBlockType(reservation),
     };
   };
 
@@ -290,9 +296,6 @@ function WeeklyReservation({ onMovePage }) {
           </span>
           <span>
             <i className="legend-dot purple"></i>대기중
-          </span>
-          <span>
-            <i className="legend-dot docker"></i>Docker 컨테이너
           </span>
         </div>
       </section>
