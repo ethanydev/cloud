@@ -25,8 +25,12 @@ async function validateReservation(resource_id, start_time, end_time, exclude_id
 
     if (hasDays) {
       const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      const startDay = dayNames[startDate.getDay()];
-      const endDay = dayNames[endDate.getDay()];
+      // Convert UTC timestamps to KST (UTC+9) to get the correct local day
+      const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+      const startKST = new Date(startDate.getTime() + KST_OFFSET_MS);
+      const endKST = new Date(endDate.getTime() + KST_OFFSET_MS);
+      const startDay = dayNames[startKST.getUTCDay()];
+      const endDay = dayNames[endKST.getUTCDay()];
       const normalizedDays = operating_hours.days.map((d) => d.toLowerCase());
 
       if (
@@ -45,8 +49,10 @@ async function validateReservation(resource_id, start_time, end_time, exclude_id
 
       const opStart = toMinutes(operating_hours.start_time);
       const opEnd = toMinutes(operating_hours.end_time);
-      const resStart = startDate.getHours() * 60 + startDate.getMinutes();
-      const resEnd = endDate.getHours() * 60 + endDate.getMinutes();
+      // operating_hours times are stored in KST (UTC+9); convert UTC timestamps to KST for comparison
+      const KST_OFFSET = 9 * 60;
+      const resStart = (startDate.getUTCHours() * 60 + startDate.getUTCMinutes() + KST_OFFSET) % (24 * 60);
+      const resEnd = (endDate.getUTCHours() * 60 + endDate.getUTCMinutes() + KST_OFFSET) % (24 * 60);
 
       if (resStart < opStart || resEnd > opEnd) {
         return {
